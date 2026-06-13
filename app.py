@@ -1,80 +1,73 @@
 from flask import Flask, render_template, request, jsonify
-import json
-import os
 
 app = Flask(__name__)
-DB_FILE = "contacts.json"
 
-def load_contacts():
-    if not os.path.exists(DB_FILE):
-        return []
-    try:
-        with open(DB_FILE, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return []
+# Temporary in-memory database mock container array
+contacts_db = [
+    {
+        "id": 1,
+        "name": "Johnny Appleseed",
+        "phone": "1-800-MY-APPLE",
+        "email": "appleseed@apple.com"
+    }
+]
 
-def save_contacts(contacts):
-    with open(DB_FILE, "w") as f:
-        json.dump(contacts, f, indent=4)
-
+# 🏠 HOME ROUTE: Serves up the HTML User Interface
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# API: Get all contacts
-@app.route('/api/contacts', methods=['GET'])
-def get_contacts():
-    return jsonify(load_contacts())
 
-# API: Add a new contact
-@app.route('/api/contacts', methods=['POST'])
-def add_contact():
-    data = request.json
-    if not data or not data.get('name'):
-        return jsonify({"error": "Name is required"}), 400
+# 📂 API ENDPOINT: Read all records OR Create a brand new contact card
+@app.route('/api/contacts', methods=['GET', 'POST'])
+def handle_contacts():
+    global contacts_db
+    
+    if request.method == 'POST':
+        data = request.get_json()
         
-    contacts = load_contacts()
-    # Simple ID generation strategy
-    new_id = max([c.get('id', 0) for c in contacts]) + 1 if contacts else 1
-    
-    new_contact = {
-        "id": new_id,
-        "name": data.get('name'),
-        "phone": data.get('phone', 'N/A'),
-        "email": data.get('email', 'N/A')
-    }
-    contacts.append(new_contact)
-    save_contacts(contacts)
-    return jsonify({"message": "Contact added!", "contact": new_contact}), 201
-
-# API: Save modifications (Edit)
-@app.route('/api/contacts/<int:contact_id>', methods=['PUT'])
-def update_contact(contact_id):
-    data = request.json
-    contacts = load_contacts()
-    
-    for c in contacts:
-        if c.get('id') == contact_id:
-            c['name'] = data.get('name', c['name'])
-            c['phone'] = data.get('phone', c['phone'])
-            c['email'] = data.get('email', c['email'])
-            save_contacts(contacts)
-            return jsonify({"message": "Contact updated successfully!", "contact": c})
-            
-    return jsonify({"error": "Contact not found"}), 404
-
-# API: Delete a contact
-@app.route('/api/contacts/<int:contact_id>', methods=['DELETE'])
-def delete_contact(contact_id):
-    contacts = load_contacts()
-    updated_contacts = [c for c in contacts if c.get('id') != contact_id]
-    
-    if len(contacts) == len(updated_contacts):
-        return jsonify({"error": "Contact not found"}), 404
+        # Construct entry schema payload
+        new_contact = {
+            "id": len(contacts_db) + 1 if contacts_db else 1,
+            "name": data.get("name", "Unknown Node Name"),
+            "phone": data.get("phone", "mobile unlisted"),
+            "email": data.get("email", "unlisted")
+        }
         
-    save_contacts(updated_contacts)
-    return jsonify({"message": "Contact deleted successfully!"})
+        contacts_db.append(new_contact)
+        return jsonify(new_contact), 201
+
+    # Default GET execution: Return absolute indexed snapshot array
+    return jsonify(contacts_db)
+
+
+# ⚙️ API ENDPOINT: Update an existing contact card OR Delete it entirely
+@app.route('/api/contacts/<int:contact_id>', methods=['PUT', 'DELETE'])
+def manage_single_contact(contact_id):
+    global contacts_db
+    
+    # Locate target item in the simulated storage table loop array
+    target_contact = next((item for item in contacts_db if item["id"] == contact_id), None)
+    
+    if not target_contact:
+        return jsonify({"error": f"Contact reference ID #{contact_id} not discovered."}), 404
+
+    if request.method == 'PUT':
+        update_data = request.get_json()
+        
+        # Hot-patch modification layers safely 
+        target_contact["name"] = update_data.get("name", target_contact["name"])
+        target_contact["phone"] = update_data.get("phone", target_contact["phone"])
+        target_contact["email"] = update_data.get("email", target_contact["email"])
+        
+        return jsonify(target_contact), 200
+
+    if request.method == 'DELETE':
+        # Re-build directory slice leaving out chosen active node reference
+        contacts_db = [item for item in contacts_db if item["id"] != contact_id]
+        return jsonify({"message": f"Successfully deleted target identity token index #{contact_id}."}), 200
+
 
 if __name__ == '__main__':
+    # Initialize high-octane local deployment pipeline engine context
     app.run(debug=True, port=5000)
