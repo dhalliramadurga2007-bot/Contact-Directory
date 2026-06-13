@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Contact Directory</title>
+    <title>iOS Contact Directory</title>
+    <!-- Lucide Icons System Link -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
@@ -34,7 +35,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Split Workspace Container Setup */
         .workspace-split {
             width: 100%;
             max-width: 1150px;
@@ -43,7 +43,6 @@
             align-items: flex-start;
         }
 
-        /* Left Column Panel Sticky Form Layout */
         .left-sidebar {
             flex: 1;
             max-width: 420px;
@@ -54,7 +53,6 @@
             top: 30px;
         }
 
-        /* Right Column Panel Interactive Stream Output */
         .right-content {
             flex: 1.4;
             display: flex;
@@ -62,7 +60,6 @@
             gap: 24px;
         }
 
-        /* App Header Layout Configuration */
         header {
             display: flex;
             justify-content: space-between;
@@ -105,7 +102,6 @@
             letter-spacing: 0.2px;
         }
 
-        /* Unified Search Bar Segment layout overrides */
         .search-container {
             position: relative;
             display: flex;
@@ -140,7 +136,6 @@
             box-shadow: 0 0 0 4px var(--ios-blue-glow);
         }
 
-        /* iOS Form Structural Container Modules */
         .ios-card {
             background: linear-gradient(145deg, var(--surface-card), #111115);
             border: 1px solid var(--border-line);
@@ -209,7 +204,6 @@
             color: #555562;
         }
 
-        /* Premium Application Dynamic Button Controls */
         .ios-btn {
             display: inline-flex;
             align-items: center;
@@ -236,11 +230,6 @@
             box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
         }
 
-        .btn-action-blue:hover {
-            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.5);
-        }
-
-        /* Contact Feed Stream Node Generation Items */
         .contact-stream {
             display: flex;
             flex-direction: column;
@@ -293,11 +282,6 @@
             gap: 10px;
         }
 
-        .meta-row span.emoji {
-            font-size: 1rem;
-        }
-
-        /* Node Option Control Circular Buttons Group */
         .node-controls {
             display: flex;
             gap: 10px;
@@ -305,7 +289,6 @@
 
         .ios-pill-btn {
             background-color: var(--surface-row);
-            color: var(--ios-blue);
             border: 1px solid rgba(255, 255, 255, 0.05);
             width: 42px;
             height: 42px;
@@ -323,9 +306,6 @@
             transform: scale(1.08);
         }
 
-        .ios-pill-btn.pill-danger {
-            color: var(--ios-red);
-        }
         .ios-pill-btn.pill-danger:hover {
             background-color: rgba(255, 69, 58, 0.15);
         }
@@ -337,7 +317,6 @@
             background-color: rgba(48, 209, 88, 0.15);
         }
 
-        /* Inline Customization Forms Frame */
         .ios-edit-container {
             display: flex;
             flex-direction: column;
@@ -354,10 +333,8 @@
             font-size: 1rem;
             width: 100%;
             box-sizing: border-box;
-            box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
         }
 
-        /* Empty Directory Zero-State layout indicators */
         .ios-empty-state {
             text-align: center;
             padding: 50px 20px;
@@ -371,11 +348,6 @@
             font-size: 3rem;
             margin-bottom: 12px;
             display: block;
-        }
-
-        .ios-empty-state p {
-            font-size: 1.1rem;
-            margin: 0;
         }
     </style>
 </head>
@@ -420,7 +392,7 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; padding: 0 4px;">
-            <div class="top-badge" id="directoryCount">0 Contacts</div>
+            <div class="top-badge" id="directoryCount">📂 0 Saved</div>
         </div>
 
         <div id="contactList" class="contact-stream"></div>
@@ -429,19 +401,25 @@
 </div>
 
 <script>
-    let allContacts = [];
+    // LocalStorage Data Broker Setup (Replaces Python backend APIs)
+    function getStoredContacts() {
+        const stored = localStorage.getItem('ios_contacts');
+        return stored ? JSON.parse(stored) : [
+            { id: 1, name: "Johnny Appleseed", phone: "1-800-MY-APPLE", email: "appleseed@apple.com" }
+        ];
+    }
 
-    // Initialize application: Fetch connection metrics
-    async function fetchContacts() {
-        const response = await fetch('/api/contacts');
-        allContacts = await response.json();
-        
-        // Update live iOS sub-header indicator count
+    function saveToStorage(contacts) {
+        localStorage.setItem('ios_contacts', JSON.stringify(contacts));
+    }
+
+    let allContacts = getStoredContacts();
+
+    function loadApp() {
         document.getElementById('directoryCount').innerText = `📂 ${allContacts.length} Saved`;
         renderContacts(allContacts);
     }
 
-    // Modern Core Stream Layout logic
     function renderContacts(contacts) {
         const listContainer = document.getElementById('contactList');
         listContainer.innerHTML = ''; 
@@ -471,12 +449,8 @@
                     </div>
                 </div>
                 <div class="node-controls" id="actions-${contact.id}">
-                    <button class="ios-pill-btn" onclick="toggleEditMode(${contact.id})" title="Edit Contact">
-                        ⚙️
-                    </button>
-                    <button class="ios-pill-btn pill-danger" onclick="deleteContact(${contact.id})" title="Delete Contact">
-                        🗑️
-                    </button>
+                    <button class="ios-pill-btn" onclick="toggleEditMode(${contact.id})" title="Edit Contact">⚙️</button>
+                    <button class="ios-pill-btn pill-danger" onclick="deleteContact(${contact.id})" title="Delete Contact">🗑️</button>
                 </div>
             `;
             listContainer.appendChild(cardNode);
@@ -485,8 +459,7 @@
         lucide.createIcons();
     }
 
-    // CREATE Action implementation
-    async function addContact() {
+    function addContact() {
         const nameInput = document.getElementById('name');
         const phoneInput = document.getElementById('phone');
         const emailInput = document.getElementById('email');
@@ -496,24 +469,23 @@
             return;
         }
 
-        await fetch('/api/contacts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                name: nameInput.value.trim(), 
-                phone: phoneInput.value.trim() || 'mobile unlisted', 
-                email: emailInput.value.trim() || 'unlisted' 
-            })
-        });
+        const newContact = {
+            id: Date.now(),
+            name: nameInput.value.trim(),
+            phone: phoneInput.value.trim() || 'mobile unlisted',
+            email: emailInput.value.trim() || 'unlisted'
+        };
+
+        allContacts.push(newContact);
+        saveToStorage(allContacts);
 
         nameInput.value = '';
         phoneInput.value = '';
         emailInput.value = '';
 
-        fetchContacts();
+        loadApp();
     }
 
-    // EDIT UI Toggle matrix switch out
     function toggleEditMode(id) {
         const contact = allContacts.find(c => c.id === id);
         const infoDiv = document.getElementById(`info-${id}`);
@@ -528,18 +500,13 @@
         `;
 
         actionsDiv.innerHTML = `
-            <button class="ios-pill-btn pill-success" onclick="saveContact(${id})" title="Save changes">
-                ✅
-            </button>
-            <button class="ios-pill-btn" onclick="fetchContacts()" title="Cancel edit">
-                ❌
-            </button>
+            <button class="ios-pill-btn pill-success" onclick="saveContact(${id})">✅</button>
+            <button class="ios-pill-btn" onclick="loadApp()">❌</button>
         `;
         lucide.createIcons();
     }
 
-    // SAVE Update pipeline request
-    async function saveContact(id) {
+    function saveContact(id) {
         const name = document.getElementById(`edit-name-${id}`).value.trim();
         const phone = document.getElementById(`edit-phone-${id}`).value.trim();
         const email = document.getElementById(`edit-email-${id}`).value.trim();
@@ -549,24 +516,21 @@
             return;
         }
 
-        await fetch(`/api/contacts/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, phone, email })
-        });
+        const index = allContacts.findIndex(c => c.id === id);
+        allContacts[index] = { id, name, phone, email };
+        saveToStorage(allContacts);
 
-        fetchContacts();
+        loadApp();
     }
 
-    // DELETE Action
-    async function deleteContact(id) {
+    function deleteContact(id) {
         if (confirm("⚠️ Are you sure you want to delete this contact card permanently?")) {
-            await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
-            fetchContacts();
+            allContacts = allContacts.filter(c => c.id !== id);
+            saveToStorage(allContacts);
+            loadApp();
         }
     }
 
-    // Real-time keyword filter search loop
     function filterContacts() {
         const query = document.getElementById('search').value.toLowerCase();
         const filtered = allContacts.filter(c => 
@@ -577,8 +541,8 @@
         renderContacts(filtered);
     }
 
-    // Run core engine init context
-    fetchContacts();
+    // App Initialization
+    loadApp();
 </script>
 
 </body>
