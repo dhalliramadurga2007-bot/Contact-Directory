@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Contact Directory</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-canvas: #08080a;
+            --surface-card: #16161a;
+            --surface-row: #24242b;
+            --ios-blue: #0a84ff;
+            --ios-blue-glow: rgba(10, 132, 255, 0.25);
+            --ios-green: #30d158;
+            --ios-red: #ff453a;
+            --ios-orange: #ff9f0a;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --border-line: #2f2f38;
+            --radius-lg: 16px;
+            --radius-sm: 12px;
+            --sf-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Split Workspace Container Setup */
+        .workspace-split {
+            width: 100%;
+            max-width: 1150px;
+            display: flex;
+            gap: 36px;
+            align-items: flex-start;
+        }
+
+        /* Left Column Panel Sticky Form Layout */
+        .left-sidebar {
+            flex: 1;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: sticky;
+            top: 30px;
+        }
+
+        /* Right Column Panel Interactive Stream Output */
+        .right-content {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* App Header Layout Configuration */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .ios-title-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ios-title-block i {
+            color: var(--ios-blue);
+            width: 32px;
+            height: 32px;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 2px 8px var(--ios-blue-glow));
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 40%, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header .top-badge {
+            background: rgba(10, 132, 255, 0.15);
+            color: var(--ios-blue);
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(10, 132, 255, 0.3);
+            letter-spacing: 0.2px;
+        }
+
+        /* Unified Search Bar Segment layout overrides */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 14px;
+            color: var(--ios-blue);
+            width: 18px;
+            height: 18px;
+        }
+
+        .ios-search-bar {
+            width: 100%;
+            background-color: var(--surface-card);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-sm);
+            padding: 14px 14px 14px 44px;
+            color: white;
+            font-size: 1.05rem;
+            box-sizing: border-box;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--sf-shadow);
+        }
+
+        .ios-search-bar:focus {
+            outline: none;
+            border-color: var(--ios-blue);
+            background-color: var(--surface-row);
+            box-shadow: 0 0 0 4px var(--ios-blue-glow);
+        }
+
+        /* iOS Form Structural Container Modules */
+        .ios-card {
+            background: linear-gradient(145deg, var(--surface-card), #111115);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--sf-shadow);
+        }
+
+        .ios-card h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--ios-blue);
+            margin: 0 0 16px 4px;
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ios-input-group {
+            background-color: var(--surface-row);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .ios-row-input {
+            display: flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-bottom: 1px solid var(--border-line);
+            transition: background-color 0.2s;
+        }
+
+        .ios-row-input:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .ios-row-input:last-child {
+            border-bottom: none;
+        }
+
+        .ios-row-input .field-emoji {
+            font-size: 1.2rem;
+            margin-right: 14px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .ios-row-input input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 12px 0;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .ios-row-input input:focus {
+            outline: none;
+        }
+
+        .ios-row-input input::placeholder {
+            color: #555562;
+        }
+
+        /* Premium Application Dynamic Button Controls */
+        .ios-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ios-btn:active {
+            transform: scale(0.98);
+            opacity: 0.85;
+        }
+
+        .btn-action-blue {
+            background: linear-gradient(135deg, var(--ios-blue), #0066cc);
+            color: white;
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-action-blue:hover {
+            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.5);
+        }
+
+        /* Contact Feed Stream Node Generation Items */
+        .contact-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ios-contact-node {
+            background: linear-gradient(145deg, var(--surface-card), #18181f);
+            border: 1px solid var(--border-line);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--sf-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .ios-contact-node:hover {
+            border-color: #444452;
+            transform: translateY(-2px);
+        }
+
+        .node-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .node-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .node-meta-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .meta-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .meta-row span.emoji {
+            font-size: 1rem;
+        }
+
+        /* Node Option Control Circular Buttons Group */
+        .node-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ios-pill-btn {
+            background-color: var(--surface-row);
+            color: var(--ios-blue);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .ios-pill-btn:hover {
+            background-color: #31313c;
+            transform: scale(1.08);
+        }
+
+        .ios-pill-btn.pill-danger {
+            color: var(--ios-red);
+        }
+        .ios-pill-btn.pill-danger:hover {
+            background-color: rgba(255, 69, 58, 0.15);
+        }
+
+        .ios-pill-btn.pill-success {
+            color: var(--ios-green);
+        }
+        .ios-pill-btn.pill-success:hover {
+            background-color: rgba(48, 209, 88, 0.15);
+        }
+
+        /* Inline Customization Forms Frame */
+        .ios-edit-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .ios-inline-input {
+            background-color: var(--surface-row);
+            border: 1px solid var(--ios-blue);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(10, 132, 255, 0.1);
+        }
+
+        /* Empty Directory Zero-State layout indicators */
+        .ios-empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+            background-color: var(--surface-card);
+            border: 1px dashed var(--border-line);
+            border-radius: var(--radius-lg);
+        }
+
+        .ios-empty-state .empty-emoji {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .ios-empty-state p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="workspace-split">
+    
+    <div class="left-sidebar">
+        <header>
+            <div class="ios-title-block">
+                <i data-lucide="notebook-tabs"></i>
+                <h1>Contacts</h1>
+            </div>
+        </header>
+
+        <div class="ios-card">
+            <h2>✨ New Contact Card</h2>
+            <div class="ios-input-group">
+                <div class="ios-row-input">
+                    <span class="field-emoji">👤</span>
+                    <input type="text" id="name" placeholder="First and Last Name" autocomplete="off">
+                </div>
+                <div class="ios-row-input">
+                    <span class="field-emoji">📱</span>
+                    <input type="text" id="phone" placeholder="Phone Number" autocomplete="off">
+                </div>
+                <div class="ios-row-input">
+                    <span class="field-emoji">✉️</span>
+                    <input type="email" id="email" placeholder="Email Address" autocomplete="off">
+                </div>
+            </div>
+            <button class="ios-btn btn-action-blue" onclick="addContact()">
+                🚀 Add Contact
+            </button>
+        </div>
+    </div>
+
+    <div class="right-content">
+        <div class="search-container">
+            <i data-lucide="search"></i>
+            <input type="text" id="search" class="ios-search-bar" placeholder="🔍 Search saved directory records..." oninput="filterContacts()">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; padding: 0 4px;">
+            <div class="top-badge" id="directoryCount">0 Contacts</div>
+        </div>
+
+        <div id="contactList" class="contact-stream"></div>
+    </div>
+
+</div>
+
+<script>
+    let allContacts = [];
+
+    // Initialize application: Fetch connection metrics
+    async function fetchContacts() {
+        const response = await fetch('/api/contacts');
+        allContacts = await response.json();
+        
+        // Update live iOS sub-header indicator count
+        document.getElementById('directoryCount').innerText = `📂 ${allContacts.length} Saved`;
+        renderContacts(allContacts);
+    }
+
+    // Modern Core Stream Layout logic
+    function renderContacts(contacts) {
+        const listContainer = document.getElementById('contactList');
+        listContainer.innerHTML = ''; 
+
+        if(contacts.length === 0) {
+            listContainer.innerHTML = `
+                <div class="ios-empty-state">
+                    <span class="empty-emoji">📭</span>
+                    <p>No Contacts Found</p>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+
+        contacts.forEach(contact => {
+            const cardNode = document.createElement('div');
+            cardNode.className = 'ios-contact-node';
+            cardNode.id = `card-${contact.id}`;
+            
+            cardNode.innerHTML = `
+                <div class="node-details" id="info-${contact.id}">
+                    <div class="node-name">🔥 ${contact.name}</div>
+                    <div class="node-meta-items">
+                        <div class="meta-row"><span class="emoji">📞</span> <span>${contact.phone}</span></div>
+                        <div class="meta-row"><span class="emoji">📩</span> <span>${contact.email}</span></div>
+                    </div>
+                </div>
+                <div class="node-controls" id="actions-${contact.id}">
+                    <button class="ios-pill-btn" onclick="toggleEditMode(${contact.id})" title="Edit Contact">
+                        ⚙️
+                    </button>
+                    <button class="ios-pill-btn pill-danger" onclick="deleteContact(${contact.id})" title="Delete Contact">
+                        🗑️
+                    </button>
+                </div>
+            `;
+            listContainer.appendChild(cardNode);
+        });
+
+        lucide.createIcons();
+    }
+
+    // CREATE Action implementation
+    async function addContact() {
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+
+        if (!nameInput.value.trim()) {
+            alert('❌ A contact name entry is required.');
+            return;
+        }
+
+        await fetch('/api/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name: nameInput.value.trim(), 
+                phone: phoneInput.value.trim() || 'mobile unlisted', 
+                email: emailInput.value.trim() || 'unlisted' 
+            })
+        });
+
+        nameInput.value = '';
+        phoneInput.value = '';
+        emailInput.value = '';
+
+        fetchContacts();
+    }
+
+    // EDIT UI Toggle matrix switch out
+    function toggleEditMode(id) {
+        const contact = allContacts.find(c => c.id === id);
+        const infoDiv = document.getElementById(`info-${id}`);
+        const actionsDiv = document.getElementById(`actions-${id}`);
+
+        infoDiv.innerHTML = `
+            <div class="ios-edit-container">
+                <input type="text" id="edit-name-${id}" class="ios-inline-input" value="${contact.name}">
+                <input type="text" id="edit-phone-${id}" class="ios-inline-input" value="${contact.phone}">
+                <input type="text" id="edit-email-${id}" class="ios-inline-input" value="${contact.email}">
+            </div>
+        `;
+
+        actionsDiv.innerHTML = `
+            <button class="ios-pill-btn pill-success" onclick="saveContact(${id})" title="Save changes">
+                ✅
+            </button>
+            <button class="ios-pill-btn" onclick="fetchContacts()" title="Cancel edit">
+                ❌
+            </button>
+        `;
+        lucide.createIcons();
+    }
+
+    // SAVE Update pipeline request
+    async function saveContact(id) {
+        const name = document.getElementById(`edit-name-${id}`).value.trim();
+        const phone = document.getElementById(`edit-phone-${id}`).value.trim();
+        const email = document.getElementById(`edit-email-${id}`).value.trim();
+
+        if (!name) {
+            alert("❌ Name field cannot be left completely empty.");
+            return;
+        }
+
+        await fetch(`/api/contacts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, email })
+        });
+
+        fetchContacts();
+    }
+
+    // DELETE Action
+    async function deleteContact(id) {
+        if (confirm("⚠️ Are you sure you want to delete this contact card permanently?")) {
+            await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+            fetchContacts();
+        }
+    }
+
+    // Real-time keyword filter search loop
+    function filterContacts() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const filtered = allContacts.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.phone.toLowerCase().includes(query) || 
+            c.email.toLowerCase().includes(query)
+        );
+        renderContacts(filtered);
+    }
+
+    // Run core engine init context
+    fetchContacts();
+</script>
+
+</body>
+</html>
